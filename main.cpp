@@ -69,13 +69,26 @@ int main(int argc, char** argv)
         depthRaw.convertTo(depthShow, CV_8U, DEPTH_SCALE_FACTOR);
 
         // extract hand from image
-        Mat rightHand(depthShow, roi);
+        Mat rightHandCpy(depthShow, roi);
+        Mat rightHand = rightHandCpy.clone();
          
         // binary threshold
         if(handDepth != -1)
             rightHand = (rightHand > (handDepth - BIN_THRESH_OFFSET)) & (rightHand < (handDepth + BIN_THRESH_OFFSET));
 
-       
+        /*
+        std::vector<std::vector<Point> > contours;
+        findContours(rightHand, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+        
+        if (contours.size()) {
+            for (int i=0; i<contours.size(); i++) {
+                vector<Point> contour = contours[i];
+                Mat contourMat = Mat(contour);
+                double area = cv::contourArea(contourMat);
+                printf("Area of contour[%d] = %f\n", i, area);
+            }
+        }
+        */
 
         imshow("depthFrame", depthShow);
         imshow("handFrame",  rightHand);
