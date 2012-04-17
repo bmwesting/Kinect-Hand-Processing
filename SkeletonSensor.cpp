@@ -89,6 +89,7 @@ int SkeletonSensor::initialize()
 void SkeletonSensor::waitForDeviceUpdateOnUser()
 {
     context_.WaitOneUpdateAll(userG_);
+    updateTrackedUsers();
 }
 
 void SkeletonSensor::updateTrackedUsers()
