@@ -22,6 +22,13 @@ const unsigned int BIN_THRESH_OFFSET = 5;
 // defines the value about witch the region of interest is extracted
 const unsigned int ROI_OFFSET = 70;
 
+// returns true if the hand is near the sensor area
+bool handApproachingDisplayPerimeter(float x, float y)
+{
+    return (x > (XRES - ROI_OFFSET)) || (x < (ROI_OFFSET)) ||
+           (y > (YRES - ROI_OFFSET)) || (y < (ROI_OFFSET));
+}
+
 int main(int argc, char** argv)
 {
 
@@ -56,9 +63,13 @@ int main(int argc, char** argv)
             if(rightHand.confidence == 1.0)
             {
                 handDepth = rightHand.z * (DEPTH_SCALE_FACTOR);
-                roi.x = rightHand.x - ROI_OFFSET;
-                roi.y = rightHand.y - ROI_OFFSET;
-                //printf("Hand depth = %d\n", handDepth);
+                
+                if(!handApproachingDisplayPerimeter(rightHand.x, rightHand.y))
+                {
+                    roi.x = rightHand.x - ROI_OFFSET;
+                    roi.y = rightHand.y - ROI_OFFSET;
+                    //printf("Hand depth = %d\n", handDepth);
+                }
             }
         }
         else
@@ -86,11 +97,27 @@ int main(int argc, char** argv)
             for (int i = 0; i < contours.size(); i++) {
                 vector<Point> contour = contours[i];
                 Mat contourMat = Mat(contour);
-                double area = contourArea(contourMat);
+                double cArea = contourArea(contourMat);
 
-                if(area > 2000) // likely the hand
+                if(cArea > 2000) // likely the hand
                 {
-                    printf("Area of contour[%d] = %f\n", i, area);
+                    //printf("Area of contour[%d] = %f\n", i, area);
+                    Scalar center = mean(contourMat);
+                    Point centerPoint = Point(center.val[0], center.val[1]);
+                    drawContours(rightHandDebug, contours, i , CV_RGB(255,0,0), 1);
+
+                    vector<Point> approxCurve;
+                    approxPolyDP(contourMat, approxCurve, 20, true);
+
+                    vector<int> hull;
+                    convexHull(Mat(approxCurve), hull);
+
+                    /*
+                    Mat hullMat = Mat(hull);
+                    double hullArea = contourArea(hullMat);
+                    if(hullArea/cArea > 0.8)
+                        printf("grasping... hullArea/contourA = %f\n", hullArea/cArea);
+                    */
                 }
             }
         }
