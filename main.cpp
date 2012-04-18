@@ -22,6 +22,9 @@ const unsigned int BIN_THRESH_OFFSET = 5;
 // defines the value about witch the region of interest is extracted
 const unsigned int ROI_OFFSET = 70;
 
+// median blur factor
+const unsigned int MEDIAN_BLUR_K = 5;
+
 // returns true if the hand is near the sensor area
 bool handApproachingDisplayPerimeter(float x, float y)
 {
@@ -87,6 +90,9 @@ int main(int argc, char** argv)
         if(handDepth != -1)
             rightHand = (rightHand > (handDepth - BIN_THRESH_OFFSET)) & (rightHand < (handDepth + BIN_THRESH_OFFSET));
 
+        // last pre-filtering step, apply median blur
+        medianBlur(rightHand, rightHand, MEDIAN_BLUR_K);
+        
         // create debug image of thresholded hand and cvt to RGB so hints show
         Mat rightHandDebug = rightHand.clone();
         cvtColor(rightHandDebug, rightHandDebug, CV_GRAY2RGB);
