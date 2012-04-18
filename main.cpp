@@ -87,8 +87,9 @@ int main(int argc, char** argv)
         if(handDepth != -1)
             rightHand = (rightHand > (handDepth - BIN_THRESH_OFFSET)) & (rightHand < (handDepth + BIN_THRESH_OFFSET));
 
-        // create debug image of thresholded hand
+        // create debug image of thresholded hand and cvt to RGB so hints show
         Mat rightHandDebug = rightHand.clone();
+        cvtColor(rightHandDebug, rightHandDebug, CV_GRAY2RGB);
 
         std::vector< std::vector<Point> > contours;
         findContours(rightHand, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
@@ -104,24 +105,34 @@ int main(int argc, char** argv)
                     //printf("Area of contour[%d] = %f\n", i, area);
                     Scalar center = mean(contourMat);
                     Point centerPoint = Point(center.val[0], center.val[1]);
-                    drawContours(rightHandDebug, contours, i , CV_RGB(255,0,0), 1);
-
+                    //circle(rightHandDebug, centerPoint, 5, Scalar(128,0,0), 5);
+                    //drawContours(rightHandDebug, contours, i, Scalar(0, 128, 0), 3);
+                    
+                    // approximate the contour by a simple curve
                     vector<Point> approxCurve;
                     approxPolyDP(contourMat, approxCurve, 20, true);
 
                     vector<int> hull;
                     convexHull(Mat(approxCurve), hull);
+                    
+                    // draw the hull points
+                    for(int j = 0; j < hull.size(); j++)
+                    {
+                        int index = hull[j];
+                        circle(rightHandDebug, approxCurve[index], 3, Scalar(0,128,200), 2);
+                    }
+                    
+                    //printf("Area of convex hull: %f\n", contourArea(Mat(hullContour)));
 
-                    /*
-                    Mat hullMat = Mat(hull);
-                    double hullArea = contourArea(hullMat);
-                    if(hullArea/cArea > 0.8)
-                        printf("grasping... hullArea/contourA = %f\n", hullArea/cArea);
-                    */
+                    //approxPolyDP(Mat(hull), hullPoints, 0.001, true);
+                    //printf("Area of convex hull: %f\n", contourArea(Mat(hullPoints)));
+                    //if(hullArea/cArea > 0.8) 
+                        //printf("grasping... hullArea/contourA = %f\n", hullArea/cArea);
                 }
             }
         }
 
+        resize(rightHandDebug, rightHandDebug, Size(), 3, 3);
         imshow("depthFrame", depthShow);
         imshow("handFrame",  rightHandDebug);
 
