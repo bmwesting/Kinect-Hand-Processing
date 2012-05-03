@@ -1,5 +1,6 @@
-This code trackes the fingertips of the tracked user. Both hands are tracked, and the user is free to move about the scene.
-The code using OpenCV to process the hands (specifically thresholding, convex hull, contours, and convexity defects)
+This code tracks the fingertips of the user. Both hands are tracked, and the user is free to move about the scene.
+
+The program uses OpenCV to process the hands (specifically: thresholding, convex hull, contours, and convexity defects)
 
 To compile this project you will need the following dependencies installed:
 
